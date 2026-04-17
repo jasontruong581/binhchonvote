@@ -9,7 +9,7 @@ from pathlib import Path
 APP_NAME = "DanTriVoteTester"
 DEFAULT_PASSWORD = "123123"
 DEFAULT_DELAY_MS = 1000
-DEFAULT_TIMEOUT_MS = 15000
+DEFAULT_TIMEOUT_MS = 90000
 
 
 def get_runtime_root(override: Path | None = None) -> Path:
@@ -27,6 +27,16 @@ def get_app_base_dir() -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent.parent
+
+
+def configure_runtime_environment() -> None:
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
+        return
+
+    if getattr(sys, "frozen", False):
+        bundled_browsers = Path(sys.executable).resolve().parent / "ms-playwright"
+        if bundled_browsers.exists():
+            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(bundled_browsers)
 
 
 @dataclass(frozen=True)

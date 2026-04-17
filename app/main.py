@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .browser_flow import run_single_account_flow
 from .cli import parse_args
-from .config import build_runtime_paths
+from .config import build_runtime_paths, configure_runtime_environment
 from .csv_pool import load_accounts, resolve_csv_candidates, select_random_unused_accounts
 from .errors import AppError, BrowserStepError
 from .logger import configure_logging
@@ -15,6 +15,7 @@ from .state_store import StateStore
 
 
 def main() -> int:
+    configure_runtime_environment()
     options = parse_args()
     runtime_paths = build_runtime_paths(options.state_dir)
     state_store = StateStore(runtime_paths)
