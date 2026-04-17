@@ -1,0 +1,136 @@
+from __future__ import annotations
+
+import sys
+import time
+from datetime import datetime
+
+from .browser_flow import run_single_account_flow
+from .cli import parse_args
+from .config import build_runtime_paths
+from .csv_pool import load_accounts, resolve_csv_candidates, select_random_unused_accounts
+from .errors import AppError, BrowserStepError
+from .logger import configure_logging
+from .models import RunResult, RunStatus
+from .state_store import StateStore
+
+
+def main() -> int:
+    options = parse_args()
+    runtime_paths = build_runtime_paths(options.state_dir)
+    state_store = StateStore(runtime_paths)
+    state_store.ensure_layout()
+    logger = configure_logging(runtime_paths.log_file)
+
+    try:
+        csv_candidates = resolve_csv_candidates(options.csv_path)
+        accounts = load_accounts(csv_candidates)
+        used_emails = state_store.load_used_emails()
+        selected_accounts = select_random_unused_accounts(
+            accounts=accounts,
+            used_emails=used_emails,
+            count=options.count,
+        )
+    except AppError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    logger.info(
+        "Starting batch run count=%s headless=%s csv_files=%s state_dir=%s",
+        options.count,
+        options.headless,
+        len(csv_candidates),
+        runtime_paths.root,
+    )
+
+    success_count = 0
+    failure_count = 0
+
+    for index, account in enumerate(selected_accounts, start=1):
+        logger.info("Processing account %s/%s email=%s", index, options.count, account.email)
+        try:
+            run_single_account_flow(
+                url=options.url,
+                account=account,
+                headless=options.headless,
+                timeout_ms=options.timeout_ms,
+                logger=logger,
+            )
+        except BrowserStepError as exc:
+            failure_count += 1
+            state_store.append_result(
+                RunResult(
+                    timestamp=datetime.now(),
+                    url=options.url,
+                    name=account.name,
+                    email=account.email,
+                    status=exc.status,
+                    step_failed=exc.step,
+                    message=str(exc),
+                )
+            )
+            logger.error(
+                "Account failed email=%s status=%s step=%s error=%s",
+                account.email,
+                exc.status,
+                exc.step,
+                exc,
+            )
+        except AppError as exc:
+            failure_count += 1
+            state_store.append_result(
+                RunResult(
+                    timestamp=datetime.now(),
+                    url=options.url,
+                    name=account.name,
+                    email=account.email,
+                    status=RunStatus.UNEXPECTED_ERROR,
+                    step_failed="browser_flow",
+                    message=str(exc),
+                )
+            )
+            logger.error("Account failed email=%s error=%s", account.email, exc)
+        except Exception as exc:
+            failure_count += 1
+            state_store.append_result(
+                RunResult(
+                    timestamp=datetime.now(),
+                    url=options.url,
+                    name=account.name,
+                    email=account.email,
+                    status=RunStatus.UNEXPECTED_ERROR,
+                    step_failed="unhandled_exception",
+                    message=str(exc),
+                )
+            )
+            logger.exception("Unhandled failure email=%s", account.email)
+        else:
+            success_count += 1
+            state_store.append_used_email(account.email)
+            state_store.append_result(
+                RunResult(
+                    timestamp=datetime.now(),
+                    url=options.url,
+                    name=account.name,
+                    email=account.email,
+                    status=RunStatus.SUCCESS,
+                    step_failed="",
+                    message="Completed successfully",
+                )
+            )
+            logger.info("Account completed email=%s", account.email)
+
+        if index < len(selected_accounts) and options.delay_ms > 0:
+            time.sleep(options.delay_ms / 1000)
+
+    logger.info(
+        "Batch finished requested=%s success=%s failure=%s results=%s",
+        options.count,
+        success_count,
+        failure_count,
+        runtime_paths.results_file,
+    )
+    return 0 if failure_count == 0 else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
