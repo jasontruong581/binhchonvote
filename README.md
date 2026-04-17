@@ -87,3 +87,28 @@ Build the Windows executable:
 ```powershell
 .\build.ps1
 ```
+
+Executable output:
+
+- `dist\vote-batch\vote-batch.exe`
+
+## Run The Exe
+
+If the packaged app is running on the same machine where Playwright browsers are already installed, set `PLAYWRIGHT_BROWSERS_PATH` before launching the `.exe`:
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH="C:\Users\<your-user>\AppData\Local\ms-playwright"
+.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 10 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-test" --headless true --timeout-ms 90000 --delay-ms 300
+```
+
+Smoke test example:
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH="C:\Users\<your-user>\AppData\Local\ms-playwright"
+.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 1 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-smoke" --headless true --timeout-ms 90000 --delay-ms 0
+```
+
+Notes:
+
+- Without `PLAYWRIGHT_BROWSERS_PATH`, the current packaged build may not find Chromium automatically.
+- Runtime state still goes to the chosen `--state-dir`.
