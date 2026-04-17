@@ -7,7 +7,7 @@ from datetime import datetime
 from .browser_flow import run_single_account_flow
 from .cli import parse_args
 from .config import build_runtime_paths, configure_runtime_environment
-from .csv_pool import load_accounts, resolve_csv_candidates, select_random_unused_accounts
+from .csv_pool import load_account_pool, resolve_csv_path
 from .errors import AppError, BrowserStepError
 from .logger import configure_logging
 from .models import RunResult, RunStatus
@@ -23,23 +23,18 @@ def main() -> int:
     logger = configure_logging(runtime_paths.log_file)
 
     try:
-        csv_candidates = resolve_csv_candidates(options.csv_path)
-        accounts = load_accounts(csv_candidates)
-        used_emails = state_store.load_used_emails()
-        selected_accounts = select_random_unused_accounts(
-            accounts=accounts,
-            used_emails=used_emails,
-            count=options.count,
-        )
+        csv_path = resolve_csv_path(options.csv_path)
+        account_pool = load_account_pool(csv_path)
+        selected_accounts = account_pool.select_random_unused_accounts(options.count)
     except AppError as exc:
         print(str(exc), file=sys.stderr)
         return 1
 
     logger.info(
-        "Starting batch run count=%s headless=%s csv_files=%s state_dir=%s",
+        "Starting batch run count=%s headless=%s csv_file=%s state_dir=%s",
         options.count,
         options.headless,
-        len(csv_candidates),
+        csv_path,
         runtime_paths.root,
     )
 
@@ -69,6 +64,7 @@ def main() -> int:
                     message=str(exc),
                 )
             )
+            account_pool.mark_used(account)
             logger.error(
                 "Account failed email=%s status=%s step=%s error=%s",
                 account.email,
@@ -89,6 +85,7 @@ def main() -> int:
                     message=str(exc),
                 )
             )
+            account_pool.mark_used(account)
             logger.error("Account failed email=%s error=%s", account.email, exc)
         except Exception as exc:
             failure_count += 1
@@ -103,10 +100,11 @@ def main() -> int:
                     message=str(exc),
                 )
             )
+            account_pool.mark_used(account)
             logger.exception("Unhandled failure email=%s", account.email)
         else:
             success_count += 1
-            state_store.append_used_email(account.email)
+            account_pool.mark_used(account)
             state_store.append_result(
                 RunResult(
                     timestamp=datetime.now(),

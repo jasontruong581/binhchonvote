@@ -10,6 +10,7 @@ class AccountRecord:
     name: str
     email: str
     source_csv: Path
+    row_index: int
 
 
 @dataclass(frozen=True)
