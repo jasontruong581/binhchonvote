@@ -32,25 +32,25 @@ python -m playwright install chromium
 Run a single visible smoke test:
 
 ```powershell
-python -m app.main --url "https://dantri.com.vn/doi-song/cuoc-thi-anh-viet-nam-trong-toi/20260416093333177.htm" --count 1 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-smoke" --headless false --timeout-ms 25000 --delay-ms 0
+python -m app.main --url "YOUR_TARGET_URL" --count 1 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-smoke" --headless false --timeout-ms 25000 --delay-ms 0
 ```
 
 Run batch 10 in headed mode:
 
 ```powershell
-python -m app.main --url "https://dantri.com.vn/doi-song/cuoc-thi-anh-viet-nam-trong-toi/20260416093333177.htm" --count 10 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-batch-10" --headless false --timeout-ms 90000 --delay-ms 1000
+python -m app.main --url "YOUR_TARGET_URL" --count 10 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-batch-10" --headless false --timeout-ms 90000 --delay-ms 1000
 ```
 
 Run batch 50 in headless mode:
 
 ```powershell
-python -m app.main --url "https://dantri.com.vn/doi-song/cuoc-thi-anh-viet-nam-trong-toi/20260416093333177.htm" --count 50 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-batch-50" --headless true --timeout-ms 90000 --delay-ms 300
+python -m app.main --url "YOUR_TARGET_URL" --count 50 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-batch-50" --headless true --timeout-ms 90000 --delay-ms 300
 ```
 
 Run by auto-discovering CSV files in the same folder as the app:
 
 ```powershell
-python -m app.main --url "https://dantri.com.vn/doi-song/cuoc-thi-anh-viet-nam-trong-toi/20260416093333177.htm" --count 10 --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-auto-csv" --headless false --timeout-ms 90000 --delay-ms 1000
+python -m app.main --url "YOUR_TARGET_URL" --count 10 --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-auto-csv" --headless false --timeout-ms 90000 --delay-ms 1000
 ```
 
 ## Parameters
