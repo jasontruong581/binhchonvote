@@ -1,4 +1,4 @@
-# DanTri Vote Batch Tester
+#  Vote Batch Tester
 
 Python CLI tool for staged batch testing of:
 
