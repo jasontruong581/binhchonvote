@@ -37,9 +37,11 @@ python -m app.main
 
 The app will ask for:
 
-1. CSV file path
-2. target URL
-3. run count
+1. target URL
+2. run count
+
+By default the app uses bundled `accounts.csv` and copies it into the runtime folder on first run.
+If you want to override that behavior, you can still pass `--csv`.
 
 Flag-based mode:
 
@@ -71,7 +73,7 @@ python -m app.main --url "YOUR_TARGET_URL" --count 50 --csv "D:\Hoang Code AI\Si
 
 - `--url`: target contest entry URL
 - `--count`: number of accounts to process
-- `--csv`: input CSV file path
+- `--csv`: optional override CSV file path
 - `--state-dir`: where logs and run state are stored
 - `--headless true|false`: browser visibility, default is `true`
 - `--timeout-ms`: step timeout in milliseconds
@@ -89,6 +91,7 @@ Each run writes to the selected `--state-dir`:
 ## Notes
 
 - The app updates the input CSV directly.
+- If you do not pass `--csv`, the app uses bundled `accounts.csv` as seed data and copies it to the runtime folder on first run.
 - If the `used` column does not exist, the app adds it automatically.
 - Only rows with empty `used` are eligible for selection.
 - Every attempted account is marked `used=1`, including failed attempts.
@@ -113,13 +116,13 @@ Executable output:
 The packaged build can run directly because `build.ps1` copies Playwright browsers into the output folder:
 
 ```powershell
-.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 10 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-test" --headless true --timeout-ms 90000 --delay-ms 300
+.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 10 --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-test" --headless true --timeout-ms 90000 --delay-ms 300
 ```
 
 Smoke test example:
 
 ```powershell
-.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 1 --csv "D:\Hoang Code AI\Side Project\binhchondantri\vietnamese_names_10000_with_emailUTF8.csv" --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-smoke" --headless true --timeout-ms 90000 --delay-ms 0
+.\dist\vote-batch\vote-batch.exe --url "YOUR_TARGET_URL" --count 1 --state-dir "D:\Hoang Code AI\Side Project\binhchondantri\.runtime-exe-smoke" --headless true --timeout-ms 90000 --delay-ms 0
 ```
 
 Notes:
@@ -127,6 +130,7 @@ Notes:
 - If you want prompt-based input instead of flags, just run `.\dist\vote-batch\vote-batch.exe` and answer the questions in the console.
 - If you do not pass `--headless`, the app runs with browser hidden by default.
 - Runtime state still goes to the chosen `--state-dir`.
+- The bundled `accounts.csv` is copied to the runtime folder the first time the app runs, then the runtime copy is updated with `used=1`.
 
 ## Run On Another Machine
 
@@ -162,7 +166,7 @@ Then run:
 
 Important:
 
-- Bring your own CSV file to that machine.
-- The app updates the CSV directly by writing `used=1`.
+- The build already includes `accounts.csv`.
+- On first run, the app copies that file to the runtime folder and updates the runtime copy by writing `used=1`.
 - Do not run the `.exe` from inside the `build` folder. Use the file in `dist\vote-batch\vote-batch.exe`.
 - If Windows blocks the app, right-click the file, open `Properties`, then allow/unblock it if needed.

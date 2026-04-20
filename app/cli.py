@@ -38,14 +38,8 @@ def parse_args() -> CliOptions:
     )
 
     args = parser.parse_args()
-    csv_path = args.csv_path
     url = args.url
     count = args.count
-
-    if csv_path is None:
-        raw_csv = input("Nhap duong dan file CSV email: ").strip()
-        if raw_csv:
-            csv_path = Path(raw_csv)
 
     if not url:
         url = input("Nhap link URL web: ").strip()
@@ -66,7 +60,7 @@ def parse_args() -> CliOptions:
     return CliOptions(
         url=url,
         count=count,
-        csv_path=csv_path,
+        csv_path=args.csv_path,
         headless=args.headless,
         delay_ms=args.delay_ms,
         timeout_ms=args.timeout_ms,

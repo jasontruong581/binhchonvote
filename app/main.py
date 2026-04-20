@@ -6,7 +6,11 @@ from datetime import datetime
 
 from .browser_flow import run_single_account_flow
 from .cli import parse_args
-from .config import build_runtime_paths, configure_runtime_environment
+from .config import (
+    build_runtime_paths,
+    configure_runtime_environment,
+    provision_default_accounts_csv,
+)
 from .csv_pool import load_account_pool, resolve_csv_path
 from .errors import AppError, BrowserStepError
 from .logger import configure_logging
@@ -23,7 +27,7 @@ def main() -> int:
     logger = configure_logging(runtime_paths.log_file)
 
     try:
-        csv_path = resolve_csv_path(options.csv_path)
+        csv_path = resolve_csv_path(options.csv_path) if options.csv_path else provision_default_accounts_csv(runtime_paths)
         account_pool = load_account_pool(csv_path)
         selected_accounts = account_pool.select_random_unused_accounts(options.count)
     except AppError as exc:
