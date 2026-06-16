@@ -7,6 +7,11 @@ Python CLI tool for staged batch testing of:
 3. vote
 4. logout
 
+Supported site adapters:
+
+- `dantri`: fully implemented and kept compatible with the original flow
+- `happy_vietnam`: scaffolded as a separate adapter with manual CAPTCHA checkpoints
+
 ## Requirements
 
 - Windows 11
@@ -46,7 +51,7 @@ If you want to override that behavior, you can still pass `--csv`.
 Flag-based mode:
 
 ```powershell
-python -m app.main --url "YOUR_TARGET_URL" --count 10 --csv "D:\path\to\emails.csv" --state-dir "D:\path\to\.runtime" --headless true --timeout-ms 90000 --delay-ms 300
+python -m app.main --site dantri --url "YOUR_TARGET_URL" --count 10 --csv "D:\path\to\emails.csv" --state-dir "D:\path\to\.runtime" --headless true --timeout-ms 90000 --delay-ms 300
 ```
 
 ## Standard Commands
@@ -72,6 +77,7 @@ python -m app.main --url "YOUR_TARGET_URL" --count 50 --csv "D:\Hoang Code AI\Si
 ## Parameters
 
 - `--url`: target contest entry URL
+- `--site`: site adapter key, default is `dantri`
 - `--count`: number of accounts to process
 - `--csv`: optional override CSV file path
 - `--state-dir`: where logs and run state are stored
@@ -98,6 +104,8 @@ Each run writes to the selected `--state-dir`:
 - CSV rows with invalid email format are skipped.
 - Each account now fails fast when its total budget is exhausted and the batch immediately moves to the next email.
 - UI automation is selector-sensitive. If the website layout changes, update selectors in `app/selectors.py` and `app/browser_flow.py`.
+- Site-specific adapters now live under `app/sites/`.
+- The `happy_vietnam` adapter currently stops at manual CAPTCHA checkpoints and is intended to keep DanTri isolated while new flow work happens separately.
 
 ## Build
 

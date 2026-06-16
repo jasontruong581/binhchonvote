@@ -4,7 +4,6 @@ import sys
 import time
 from datetime import datetime
 
-from .browser_flow import run_single_account_flow
 from .cli import parse_args
 from .config import (
     build_runtime_paths,
@@ -15,6 +14,8 @@ from .csv_pool import load_account_pool, resolve_csv_path
 from .errors import AppError, BrowserStepError
 from .logger import configure_logging
 from .models import RunResult, RunStatus
+from .sites.base import SiteFlowContext
+from .sites.registry import get_site_flow
 from .state_store import StateStore
 
 
@@ -27,15 +28,17 @@ def main() -> int:
     logger = configure_logging(runtime_paths.log_file)
 
     try:
+        site_flow = get_site_flow(options.site)
         csv_path = resolve_csv_path(options.csv_path) if options.csv_path else provision_default_accounts_csv(runtime_paths)
         account_pool = load_account_pool(csv_path)
         selected_accounts = account_pool.select_random_unused_accounts(options.count)
-    except AppError as exc:
+    except (AppError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 
     logger.info(
-        "Starting batch run count=%s headless=%s csv_file=%s state_dir=%s",
+        "Starting batch run site=%s count=%s headless=%s csv_file=%s state_dir=%s",
+        options.site,
         options.count,
         options.headless,
         csv_path,
@@ -48,12 +51,14 @@ def main() -> int:
     for index, account in enumerate(selected_accounts, start=1):
         logger.info("Processing account %s/%s email=%s", index, options.count, account.email)
         try:
-            run_single_account_flow(
+            site_flow.run(
                 url=options.url,
-                account=account,
-                headless=options.headless,
-                timeout_ms=options.timeout_ms,
-                logger=logger,
+                context=SiteFlowContext(
+                    account=account,
+                    headless=options.headless,
+                    timeout_ms=options.timeout_ms,
+                    logger=logger,
+                ),
             )
         except BrowserStepError as exc:
             failure_count += 1

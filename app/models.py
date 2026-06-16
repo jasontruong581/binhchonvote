@@ -26,6 +26,7 @@ class RunResult:
 
 @dataclass(frozen=True)
 class CliOptions:
+    site: str
     url: str
     count: int
     csv_path: Path | None

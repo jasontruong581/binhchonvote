@@ -18,6 +18,7 @@ def _parse_bool(value: str) -> bool:
 
 def parse_args() -> CliOptions:
     parser = argparse.ArgumentParser(description="DanTri batch vote flow tester")
+    parser.add_argument("--site", default="dantri", help="Target site adapter key (default: dantri)")
     parser.add_argument("--url", help="Target contest entry URL")
     parser.add_argument("--count", type=int, help="Number of accounts to process")
     parser.add_argument("--csv", dest="csv_path", type=Path, help="Explicit CSV file path")
@@ -58,6 +59,7 @@ def parse_args() -> CliOptions:
             break
 
     return CliOptions(
+        site=args.site,
         url=url,
         count=count,
         csv_path=args.csv_path,
